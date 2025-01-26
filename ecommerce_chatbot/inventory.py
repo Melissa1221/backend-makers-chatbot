@@ -161,5 +161,5 @@ CATEGORIES = {
 LABELS = [
     "electronics", "premium", "budget", "wireless", "portable",
     "high-performance", "work", "camera", "5G", "noise-cancelling",
-    "fitness", "health", "creativity", "music"
+    "fitness", "health", "creativity", "music", "mobile"
 ]
