@@ -1,18 +1,25 @@
+"""Recommendation models."""
 from enum import Enum
-from pydantic import BaseModel
 from datetime import datetime
-from typing import List
+from typing import List, Optional
+from pydantic import BaseModel, Field
 
 class RecommendationType(str, Enum):
-    HIGHLY_RECOMMENDED = "Highly Recommended"
-    RECOMMENDED = "Recommended"
-    NOT_RECOMMENDED = "Not Recommended"
+    """Types of recommendations."""
+    HIGHLY_RECOMMENDED = "highly_recommended"
+    RECOMMENDED = "recommended"
+    NOT_RECOMMENDED = "not_recommended"
 
 class ProductRecommendation(BaseModel):
+    """Product recommendation model."""
     product_id: int
     recommendation_type: RecommendationType
-    score: float
+    score: float = Field(..., ge=0.0, le=1.0)
     updated_at: datetime
+
+    class Config:
+        """Pydantic config."""
+        from_attributes = True
 
 class ProductRecommendationResponse(BaseModel):
     product_id: int
@@ -23,3 +30,10 @@ class ProductRecommendationResponse(BaseModel):
 
 class RecommendationListResponse(BaseModel):
     recommendations: List[ProductRecommendationResponse]
+
+class UserRecommendations(BaseModel):
+    """User recommendations response model."""
+    highly_recommended: List[int] = Field(default_factory=list)
+    recommended: List[int] = Field(default_factory=list)
+    not_recommended: List[int] = Field(default_factory=list)
+    updated_at: Optional[datetime] = None

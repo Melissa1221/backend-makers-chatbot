@@ -47,4 +47,26 @@ CREATE TABLE IF NOT EXISTS product_specs (
     spec_key VARCHAR(100) NOT NULL,
     spec_value TEXT NOT NULL,
     PRIMARY KEY (product_id, spec_key)
-); 
+);
+
+-- User interactions tables
+CREATE TABLE IF NOT EXISTS user_purchases (
+    user_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    purchased_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+    PRIMARY KEY (user_id, product_id)
+);
+
+CREATE TABLE IF NOT EXISTS user_views (
+    user_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    viewed_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+    view_count INTEGER DEFAULT 1,
+    PRIMARY KEY (user_id, product_id)
+);
+
+-- Create indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_user_purchases_user_id ON user_purchases(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_purchases_product_id ON user_purchases(product_id);
+CREATE INDEX IF NOT EXISTS idx_user_views_user_id ON user_views(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_views_product_id ON user_views(product_id); 
