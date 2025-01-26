@@ -10,6 +10,7 @@ class ProductBase(BaseModel):
     description: Optional[str] = None
     stock: int = Field(default=0, ge=0)
     category_id: Optional[int] = None
+    image_url: Optional[str] = None
 
 class ProductCreate(ProductBase):
     """Product creation model."""
@@ -22,6 +23,7 @@ class ProductUpdate(ProductBase):
     price: Optional[float] = Field(None, ge=0)
     specs: Optional[Dict[str, str]] = None
     labels: Optional[List[str]] = None
+    image_url: Optional[str] = None
 
 class Product(ProductBase):
     """Complete product model."""

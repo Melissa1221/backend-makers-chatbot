@@ -1,7 +1,6 @@
 """Category models."""
 from datetime import datetime
 from typing import Optional
-from uuid import UUID
 from pydantic import BaseModel
 
 class CategoryBase(BaseModel):
@@ -20,7 +19,7 @@ class CategoryUpdate(CategoryBase):
 
 class Category(CategoryBase):
     """Complete category model."""
-    id: UUID
+    id: int
     created_at: datetime
 
     class Config:

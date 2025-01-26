@@ -1,6 +1,5 @@
 """Category service with Supabase integration."""
 from typing import List, Optional
-from uuid import UUID
 from app.db.supabase import get_supabase
 from app.models.category import CategoryCreate, CategoryUpdate, Category
 
@@ -20,9 +19,9 @@ class CategoryService:
         
         return Category(**result.data[0])
 
-    async def get_category(self, category_id: UUID) -> Optional[Category]:
+    async def get_category(self, category_id: int) -> Optional[Category]:
         """Get a category by ID."""
-        result = self.supabase.table('categories').select('*').eq('id', str(category_id)).execute()
+        result = self.supabase.table('categories').select('*').eq('id', category_id).execute()
         if not result.data:
             return None
         return Category(**result.data[0])
@@ -32,7 +31,7 @@ class CategoryService:
         result = self.supabase.table('categories').select('*').execute()
         return [Category(**data) for data in result.data]
 
-    async def update_category(self, category_id: UUID, category: CategoryUpdate) -> Optional[Category]:
+    async def update_category(self, category_id: int, category: CategoryUpdate) -> Optional[Category]:
         """Update a category."""
         update_data = category.model_dump(exclude_unset=True)
         if not update_data:
@@ -40,13 +39,13 @@ class CategoryService:
 
         result = self.supabase.table('categories').update(
             update_data
-        ).eq('id', str(category_id)).execute()
+        ).eq('id', category_id).execute()
         
         if not result.data:
             return None
         return Category(**result.data[0])
 
-    async def delete_category(self, category_id: UUID) -> bool:
+    async def delete_category(self, category_id: int) -> bool:
         """Delete a category."""
-        result = self.supabase.table('categories').delete().eq('id', str(category_id)).execute()
+        result = self.supabase.table('categories').delete().eq('id', category_id).execute()
         return bool(result.data) 
