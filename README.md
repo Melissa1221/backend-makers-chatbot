@@ -25,26 +25,51 @@ git clone <your-repo-url>
 cd ecommerce-chatbot
 ```
 
-2. **Set up Python virtual environment**
+2. **Choose your installation method:**
+
+### Option A: Using pip and venv
+
+1. **Set up Python virtual environment**
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows use: venv\Scripts\activate
 ```
 
-3. **Install dependencies**
+2. **Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **Set up environment variables**
+### Option B: Using Poetry
+
+1. **Install Poetry** (if not already installed)
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+2. **Install dependencies**
+```bash
+poetry install
+```
+
+3. **Activate the poetry shell**
+```bash
+poetry shell
+```
+
+3. **Set up environment variables**
 Create a `.env` file in the root directory:
 ```
 OPENAI_API_KEY=your_api_key_here
 ```
 
-5. **Run the server**
+4. **Run the server**
 ```bash
+# If using pip/venv
 uvicorn app.main:app --reload --port 8003
+
+# If using Poetry
+poetry run uvicorn app.main:app --reload --port 8003
 ```
 
 The API will be available at `http://localhost:8003`
@@ -84,6 +109,7 @@ ecommerce-chatbot/
 │   ├── chatbot.py        # Chatbot logic
 │   └── inventory.py      # Product data
 ├── requirements.txt      # Python dependencies
+├── pyproject.toml       # Poetry configuration
 └── .env                 # Environment variables
 ```
 
@@ -91,7 +117,11 @@ ecommerce-chatbot/
 
 ### Running Tests
 ```bash
+# Using pip/venv
 pytest
+
+# Using Poetry
+poetry run pytest
 ```
 
 ### Code Style
@@ -116,4 +146,4 @@ The chatbot has information about various products including:
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the LICENSE file for details.
