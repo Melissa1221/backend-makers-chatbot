@@ -32,7 +32,7 @@ class RecommendationService:
     def classify_recommendation(self, score: float) -> RecommendationType:
         if score >= 150:
             return RecommendationType.HIGHLY_RECOMMENDED
-        elif score >= 50:
+        elif score >= 75:
             return RecommendationType.RECOMMENDED
         else:
             return RecommendationType.NOT_RECOMMENDED
@@ -40,13 +40,11 @@ class RecommendationService:
     def update_recommendations(self):
         products = self.get_all_products()
         
-        
         recommendations = []
         for product in products:
             features = self.calculate_product_features(product)
             
-            
-            score = np.mean(features)  
+            score = np.mean(features)
             
             rec_type = self.classify_recommendation(score)
             

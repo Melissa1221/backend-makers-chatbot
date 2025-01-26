@@ -30,4 +30,4 @@ def get_supabase_client():
             "Las variables de entorno SUPABASE_URL y SUPABASE_KEY deben estar configuradas"
         )
     
-    return create_client(supabase_url, supabase_key) 
+    return create_client(supabase_url, supabase_key)

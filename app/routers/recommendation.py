@@ -15,4 +15,4 @@ async def get_recommendations():
 async def get_recommendations_by_type(recommendation_type: str):
     service = RecommendationService()
     recommendations = service.get_recommendations_by_type(recommendation_type)
-    return RecommendationListResponse(recommendations=recommendations) 
+    return RecommendationListResponse(recommendations=recommendations)
