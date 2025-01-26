@@ -1,6 +1,5 @@
 """Category router."""
 from typing import List
-from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from app.models.category import Category, CategoryCreate, CategoryUpdate
 from app.services.category_service import CategoryService
@@ -33,7 +32,7 @@ async def create_category(
 
 @router.get("/{category_id}", response_model=Category)
 async def get_category(
-    category_id: UUID,
+    category_id: int,
     service: CategoryService = Depends(get_category_service)
 ) -> Category:
     """Get a category by ID."""
@@ -44,7 +43,7 @@ async def get_category(
 
 @router.put("/{category_id}", response_model=Category)
 async def update_category(
-    category_id: UUID,
+    category_id: int,
     category: CategoryUpdate,
     service: CategoryService = Depends(get_category_service)
 ) -> Category:
@@ -56,7 +55,7 @@ async def update_category(
 
 @router.delete("/{category_id}")
 async def delete_category(
-    category_id: UUID,
+    category_id: int,
     service: CategoryService = Depends(get_category_service)
 ) -> dict:
     """Delete a category."""

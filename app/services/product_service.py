@@ -18,7 +18,8 @@ class ProductService:
             'price': product.price,
             'description': product.description,
             'stock': product.stock,
-            'category_id': product.category_id
+            'category_id': product.category_id,
+            'image_url': product.image_url
         }).execute()
         
         product_id = result.data[0]['id']

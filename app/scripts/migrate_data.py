@@ -49,7 +49,8 @@ async def migrate_data():
             'price': product_data['price'],
             'description': product_data['description'],
             'stock': product_data['stock'],
-            'category_id': category_id_map[product_data['category']]
+            'category_id': category_id_map[product_data['category']],
+            'image_url': product_data['image_url']
         }).execute()
         
         product_id = product_result.data[0]['id']
