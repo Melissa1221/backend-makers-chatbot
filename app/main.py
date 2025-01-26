@@ -1,17 +1,19 @@
-"""Simple FastAPI application for chatbot."""
-
-from typing import Dict, List
+"""Main FastAPI application."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from ecommerce_chatbot.chatbot import create_chatbot
-from ecommerce_chatbot.inventory import INVENTORY, CATEGORIES, LABELS
-from langchain_core.messages import HumanMessage
+from app.core.config import get_settings
+from app.routers import product, category, chat
 
+# Get settings
+settings = get_settings()
+
+# Create FastAPI app
 app = FastAPI(
-    title="E-commerce Chatbot API",
-    description="Simple API for chatting with the e-commerce assistant",
-    version="1.0.0"
+    title=settings.PROJECT_NAME,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    docs_url="/docs",
+    # Disable automatic redirect for trailing slashes
+    redirect_slashes=False
 )
 
 # Add CORS middleware
@@ -23,101 +25,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create chatbot instance
-chatbot = create_chatbot()
-
-class ChatMessage(BaseModel):
-    """Chat message schema."""
-    message: str
-
-class ChatResponse(BaseModel):
-    """Chat response schema."""
-    response: str
-
-@app.get("/products", tags=["products"])
-async def get_products():
-    """Get all products."""
-    return {
-        "products": [
-            {
-                "id": key,
-                **value
-            }
-            for key, value in INVENTORY.items()
-        ]
-    }
-
-@app.get("/products/{product_id}", tags=["products"])
-async def get_product(product_id: str):
-    """Get a specific product by ID."""
-    if product_id not in INVENTORY:
-        return {"error": "Product not found"}
-    return {
-        "product": {
-            "id": product_id,
-            **INVENTORY[product_id]
-        }
-    }
-
-@app.get("/categories", tags=["categories"])
-async def get_categories():
-    """Get all product categories."""
-    return {
-        "categories": [
-            {
-                "id": key,
-                **value
-            }
-            for key, value in CATEGORIES.items()
-        ]
-    }
-
-@app.get("/categories/{category_id}/products", tags=["categories"])
-async def get_products_by_category(category_id: str):
-    """Get all products in a specific category."""
-    products = [
-        {
-            "id": key,
-            **value
-        }
-        for key, value in INVENTORY.items()
-        if value["category"] == category_id
-    ]
-    return {"products": products}
-
-@app.get("/labels", tags=["products"])
-async def get_labels():
-    """Get all available product labels."""
-    return {"labels": LABELS}
-
-@app.post("/chat", response_model=ChatResponse, tags=["chat"])
-async def chat(message: ChatMessage):
-    """Send a message to the chatbot."""
-    # Create message
-    user_message = HumanMessage(content=message.message)
-    
-    # Get chatbot response
-    response_content = ""
-    async for chunk, _ in chatbot.astream(
-        {"messages": [user_message]},
-        {"configurable": {"thread_id": "simple_chat"}},
-        stream_mode="messages"
-    ):
-        if hasattr(chunk, 'content'):
-            response_content += chunk.content
-    
-    return ChatResponse(response=response_content)
+# Include routers
+app.include_router(product.router, prefix=settings.API_V1_STR)
+app.include_router(category.router, prefix=settings.API_V1_STR)
+app.include_router(chat.router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def root():
     """Root endpoint."""
     return {
-        "message": "Welcome to the E-commerce Chatbot API",
-        "endpoints": {
-            "products": "/products",
-            "categories": "/categories",
-            "labels": "/labels",
-            "chat": "/chat"
-        },
-        "docs_url": "/docs"
+        "message": f"Welcome to {settings.PROJECT_NAME}",
+        "docs_url": "/docs",
+        "openapi_url": f"{settings.API_V1_STR}/openapi.json"
     } 

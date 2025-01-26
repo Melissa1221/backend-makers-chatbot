@@ -5,8 +5,13 @@ from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from ..services.auth import get_current_active_user
 from ..services.chat import chat_service
+from app.models.chat import ChatMessage, ChatResponse
+from app.services.chat_service import ChatService
 
-router = APIRouter(prefix="/chat", tags=["chat"])
+router = APIRouter(
+    prefix="/chat",
+    tags=["chat"]
+)
 
 class ChatMessage(BaseModel):
     """Chat message schema."""
@@ -26,13 +31,18 @@ class ChatHistoryResponse(BaseModel):
     """Chat history response schema."""
     history: List[ChatHistoryEntry]
 
-@router.post("/send", response_model=ChatResponse)
-async def send_message(
+async def get_chat_service() -> ChatService:
+    """Dependency injection for ChatService."""
+    return ChatService()
+
+@router.post("", response_model=ChatResponse)
+@router.post("/", response_model=ChatResponse)
+async def chat(
     message: ChatMessage,
-    current_user: dict = Depends(get_current_active_user),
-):
+    service: ChatService = Depends(get_chat_service)
+) -> ChatResponse:
     """Send a message to the chatbot."""
-    response = await chat_service.send_message(current_user, message.message)
+    response = await service.get_chat_response(message.message)
     return ChatResponse(response=response)
 
 @router.get("/history", response_model=ChatHistoryResponse)
@@ -55,11 +65,11 @@ async def websocket_endpoint(
             # Receive message
             message = await websocket.receive_text()
             
-            # Get user (in a real app, you'd validate the client_id)
-            user = {"username": client_id, "id": 0}  # Simplified for demo
+            # Get chat service
+            service = ChatService()
             
             # Process message and get response
-            response = await chat_service.send_message(user, message)
+            response = await service.get_chat_response(message)
             
             # Send response back
             await websocket.send_text(response)
