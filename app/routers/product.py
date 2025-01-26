@@ -1,6 +1,5 @@
 """Product router."""
 from typing import List
-from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from app.models.product import Product, ProductCreate, ProductUpdate
 from app.services.product_service import ProductService
@@ -33,7 +32,7 @@ async def create_product(
 
 @router.get("/{product_id}", response_model=Product)
 async def get_product(
-    product_id: UUID,
+    product_id: int,
     service: ProductService = Depends(get_product_service)
 ) -> Product:
     """Get a product by ID."""
@@ -44,7 +43,7 @@ async def get_product(
 
 @router.put("/{product_id}", response_model=Product)
 async def update_product(
-    product_id: UUID,
+    product_id: int,
     product: ProductUpdate,
     service: ProductService = Depends(get_product_service)
 ) -> Product:
@@ -56,10 +55,26 @@ async def update_product(
 
 @router.delete("/{product_id}")
 async def delete_product(
-    product_id: UUID,
+    product_id: int,
     service: ProductService = Depends(get_product_service)
 ) -> dict:
     """Delete a product."""
     if await service.delete_product(product_id):
         return {"message": "Product deleted successfully"}
-    raise HTTPException(status_code=404, detail="Product not found") 
+    raise HTTPException(status_code=404, detail="Product not found")
+
+@router.get("/category/{category_id}", response_model=List[Product])
+async def list_products_by_category(
+    category_id: int,
+    service: ProductService = Depends(get_product_service)
+) -> List[Product]:
+    """Get all products in a specific category."""
+    return await service.get_products_by_category(category_id)
+
+@router.get("/label/{label_name}", response_model=List[Product])
+async def list_products_by_label(
+    label_name: str,
+    service: ProductService = Depends(get_product_service)
+) -> List[Product]:
+    """Get all products with a specific label."""
+    return await service.get_products_by_label(label_name) 

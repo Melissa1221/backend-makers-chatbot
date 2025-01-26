@@ -1,7 +1,6 @@
 """Product models."""
 from datetime import datetime
 from typing import Dict, List, Optional
-from uuid import UUID
 from pydantic import BaseModel, Field
 
 class ProductBase(BaseModel):
@@ -10,7 +9,7 @@ class ProductBase(BaseModel):
     price: float = Field(..., ge=0)
     description: Optional[str] = None
     stock: int = Field(default=0, ge=0)
-    category_id: Optional[UUID] = None
+    category_id: Optional[int] = None
 
 class ProductCreate(ProductBase):
     """Product creation model."""
@@ -26,7 +25,7 @@ class ProductUpdate(ProductBase):
 
 class Product(ProductBase):
     """Complete product model."""
-    id: UUID
+    id: int
     specs: Dict[str, str]
     labels: List[str]
     created_at: datetime

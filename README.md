@@ -85,7 +85,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```sql
 -- Categories table (Create this first since products reference it)
 CREATE TABLE IF NOT EXISTS categories (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
@@ -93,149 +93,35 @@ CREATE TABLE IF NOT EXISTS categories (
 
 -- Products table
 CREATE TABLE IF NOT EXISTS products (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     description TEXT,
     stock INTEGER NOT NULL DEFAULT 0,
-    category_id UUID REFERENCES categories(id),
+    category_id INTEGER REFERENCES categories(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
 -- Product labels table
 CREATE TABLE IF NOT EXISTS labels (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
 
 -- Product-Labels relationship table
 CREATE TABLE IF NOT EXISTS product_labels (
-    product_id UUID REFERENCES products(id) ON DELETE CASCADE,
-    label_id UUID REFERENCES labels(id) ON DELETE CASCADE,
+    product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+    label_id INTEGER REFERENCES labels(id) ON DELETE CASCADE,
     PRIMARY KEY (product_id, label_id)
 );
 
 -- Product specifications table
 CREATE TABLE IF NOT EXISTS product_specs (
-    product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+    product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
     spec_key VARCHAR(100) NOT NULL,
     spec_value TEXT NOT NULL,
     PRIMARY KEY (product_id, spec_key)
 );
 ```
-
-5. **Migrate initial data**
-```bash
-# Using pip/venv
-python -m app.scripts.migrate_data
-
-# Using Poetry
-poetry run python -m app.scripts.migrate_data
-```
-
-6. **Run the server**
-```bash
-# Using pip/venv
-uvicorn app.main:app --reload --port 8000
-
-# Using Poetry
-poetry run uvicorn app.main:app --reload --port 8000
-```
-
-The API will be available at `http://localhost:8000`
-
-## API Endpoints
-
-### Products
-- `GET /api/v1/products` - Get all products
-- `GET /api/v1/products/{id}` - Get specific product
-- `POST /api/v1/products` - Create a product
-- `PUT /api/v1/products/{id}` - Update a product
-- `DELETE /api/v1/products/{id}` - Delete a product
-
-### Categories
-- `GET /api/v1/categories` - Get all categories
-- `GET /api/v1/categories/{id}` - Get specific category
-- `POST /api/v1/categories` - Create a category
-- `PUT /api/v1/categories/{id}` - Update a category
-- `DELETE /api/v1/categories/{id}` - Delete a category
-
-### Chat
-- `POST /api/v1/chat`
-  ```json
-  {
-    "message": "What laptops do you have?"
-  }
-  ```
-- `WebSocket /api/v1/chat/ws/{client_id}` - Real-time chat
-
-## API Documentation
-
-Visit `http://localhost:8000/docs` for interactive Swagger documentation.
-
-## Project Structure
-
-```
-ecommerce-chatbot/
-├── app/
-│   ├── main.py           # FastAPI application
-│   ├── db/
-│   │   └── supabase.py   # Supabase client
-│   │   └── models/
-│   │   │   ├── product.py    # Product models
-│   │   │   └── category.py   # Category models
-│   │   ├── routers/
-│   │   │   ├── product.py    # Product endpoints
-│   │   │   ├── category.py   # Category endpoints
-│   │   │   └── chat.py       # Chat endpoints
-│   │   └── services/
-│   │   │   ├── product.py    # Product service
-│   │   │   ├── category.py   # Category service
-│   │   │   └── chat.py       # Chat service
-│   └── ecommerce_chatbot/
-│   │   ├── chatbot.py        # Chatbot logic
-│   │   └── inventory.py      # Initial product data
-│   ├── requirements.txt      # Python dependencies
-│   ├── pyproject.toml       # Poetry configuration
-│   └── .env                 # Environment variables
-```
-
-## Development
-
-### Running Tests
-```bash
-# Using pip/venv
-pytest
-
-# Using Poetry
-poetry run pytest
-```
-
-### Code Style
-The project follows PEP 8 guidelines. We recommend using:
-- black for code formatting
-- isort for import sorting
-- flake8 for linting
-
-## Available Products
-
-The chatbot has information about various products including:
-- Laptops (HP, Dell, MacBook)
-- Smartphones (Samsung, iPhone)
-- Audio devices (Sony, Bose)
-- Wearables (Apple Watch, Fitbit)
-- Tablets (Lenovo)
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.

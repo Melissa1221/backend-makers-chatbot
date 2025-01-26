@@ -1,86 +1,86 @@
-"""Script to migrate existing inventory data to Supabase."""
+"""Script to migrate inventory data to Supabase."""
 import asyncio
-import uuid
-from app.db.supabase import get_supabase
-from ecommerce_chatbot.inventory import INVENTORY, CATEGORIES
+import os
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+from ecommerce_chatbot.inventory import INVENTORY, CATEGORIES, LABELS
+
+# Load environment variables
+load_dotenv()
+
+# Initialize Supabase client
+supabase: Client = create_client(
+    os.getenv("SUPABASE_URL", ""),
+    os.getenv("SUPABASE_KEY", "")
+)
 
 async def migrate_data():
     """Migrate inventory data to Supabase."""
-    supabase = get_supabase()
-    
     print("Starting data migration...")
-    
-    # 1. Insert categories
-    print("\nMigrating categories...")
-    for category_id, category in CATEGORIES.items():
-        result = supabase.table('categories').upsert({
-            'id': str(uuid.uuid4()),
-            'name': category['name'],
-            'description': category['description']
+
+    # Step 1: Insert categories
+    print("\nInserting categories...")
+    category_id_map = {}  # Map category names to their IDs
+    for category_key, category_data in CATEGORIES.items():
+        result = supabase.table('categories').insert({
+            'name': category_data['name'],
+            'description': category_data['description']
         }).execute()
-        print(f"✓ Inserted category: {category['name']}")
-    
-    # Get category IDs for reference
-    categories_result = supabase.table('categories').select('*').execute()
-    category_map = {
-        cat['name']: cat['id'] 
-        for cat in categories_result.data
-    }
-    
-    # 2. Insert products with their relationships
-    print("\nMigrating products...")
-    for product_id, product in INVENTORY.items():
-        # Find category ID
-        category_name = CATEGORIES[product['category']]['name']
-        category_id = category_map.get(category_name)
-        
-        # Insert product
+        category_id_map[category_key] = result.data[0]['id']
+        print(f"✓ Added category: {category_data['name']}")
+
+    # Step 2: Insert labels
+    print("\nInserting labels...")
+    label_id_map = {}  # Map label names to their IDs
+    for label in LABELS:
+        result = supabase.table('labels').insert({
+            'name': label
+        }).execute()
+        label_id_map[label] = result.data[0]['id']
+        print(f"✓ Added label: {label}")
+
+    # Step 3: Insert products with their specs and labels
+    print("\nInserting products with specs and labels...")
+    for product_key, product_data in INVENTORY.items():
+        # Insert base product data
         product_result = supabase.table('products').insert({
-            'name': product['name'],
-            'price': product['price'],
-            'description': product['description'],
-            'stock': product['stock'],
-            'category_id': category_id
+            'name': product_data['name'],
+            'price': product_data['price'],
+            'description': product_data['description'],
+            'stock': product_data['stock'],
+            'category_id': category_id_map[product_data['category']]
         }).execute()
         
-        db_product_id = product_result.data[0]['id']
-        print(f"✓ Inserted product: {product['name']}")
-        
-        # Insert product specs
-        if product['specs']:
+        product_id = product_result.data[0]['id']
+        print(f"✓ Added product: {product_data['name']}")
+
+        # Insert product specifications
+        if product_data.get('specs'):
             specs_data = [
                 {
-                    'product_id': db_product_id,
+                    'product_id': product_id,
                     'spec_key': key,
                     'spec_value': str(value)
                 }
-                for key, value in product['specs'].items()
+                for key, value in product_data['specs'].items()
             ]
             supabase.table('product_specs').insert(specs_data).execute()
-            print(f"  ✓ Added {len(specs_data)} specifications")
-        
-        # Insert labels
-        if product['labels']:
-            # Ensure labels exist
-            for label in product['labels']:
-                supabase.table('labels').upsert(
-                    {'name': label},
-                    on_conflict='name'
-                ).execute()
-            
-            # Get label IDs
-            label_results = supabase.table('labels').select('id').in_('name', product['labels']).execute()
-            label_ids = [row['id'] for row in label_results.data]
-            
-            # Create product-label relationships
+            print(f"  ✓ Added specs for: {product_data['name']}")
+
+        # Insert product-label relationships
+        if product_data.get('labels'):
             label_relations = [
-                {'product_id': db_product_id, 'label_id': label_id}
-                for label_id in label_ids
+                {
+                    'product_id': product_id,
+                    'label_id': label_id_map[label]
+                }
+                for label in product_data['labels']
             ]
             supabase.table('product_labels').insert(label_relations).execute()
-            print(f"  ✓ Added {len(label_relations)} labels")
-    
-    print("\nMigration completed successfully!")
+            print(f"  ✓ Added labels for: {product_data['name']}")
+
+    print("\nData migration completed successfully! 🎉")
 
 if __name__ == "__main__":
     asyncio.run(migrate_data()) 
