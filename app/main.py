@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
-from app.routers import product, category, chat
+from app.routers import product, category, chat, recommendation
 
 # Get settings
 settings = get_settings()
@@ -29,6 +29,7 @@ app.add_middleware(
 app.include_router(product.router, prefix=settings.API_V1_STR)
 app.include_router(category.router, prefix=settings.API_V1_STR)
 app.include_router(chat.router, prefix=settings.API_V1_STR)
+app.include_router(recommendation.router)
 
 @app.get("/")
 async def root():
