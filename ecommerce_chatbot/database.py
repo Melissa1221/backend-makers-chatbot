@@ -63,4 +63,13 @@ CREATE TABLE IF NOT EXISTS product_specs (
     spec_value TEXT NOT NULL,
     PRIMARY KEY (product_id, spec_key)
 );
+
+-- Product recommendations table
+CREATE TABLE IF NOT EXISTS product_recommendations (
+    product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+    recommendation_type TEXT NOT NULL,
+    score FLOAT NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    PRIMARY KEY (product_id)
+);
 """ 

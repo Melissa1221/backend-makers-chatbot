@@ -23,13 +23,20 @@ class ProductUpdate(ProductBase):
     specs: Optional[Dict[str, str]] = None
     labels: Optional[List[str]] = None
 
-class Product(ProductBase):
+class Product(BaseModel):
     """Complete product model."""
     id: int
-    specs: Dict[str, str]
-    labels: List[str]
-    created_at: datetime
-    updated_at: datetime
+    name: str
+    description: str
+    price: float
+    stock: int
+    category_id: int
+    image_url: Optional[str] = None
+    rating: Optional[float] = 0.0
+    specs: Optional[dict] = {}
+    labels: Optional[List[str]] = []
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         """Pydantic config."""
