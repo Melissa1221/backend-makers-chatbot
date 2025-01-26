@@ -22,8 +22,8 @@ model = ChatOpenAI(
 
 # Create the system prompt with inventory context
 inventory_str = "\n".join([
-    f"- {details['name']}: ${details['price']}, Stock: {details['stock']}\n  {details['description']}"
-    for details in INVENTORY.values()
+    f"{i+1}. {details['name']}: ${details['price']}, Stock: {details['stock']}\n   {details['description']}"
+    for i, details in enumerate(INVENTORY.values())
 ])
 
 SYSTEM_PROMPT = f"""You are a helpful e-commerce assistant. You have access to the following inventory:
@@ -36,7 +36,13 @@ Help customers by:
 3. Being polite and professional at all times
 4. If asked about a product not in the inventory, politely inform that it's not available
 
-Keep responses concise and focused on the inventory information provided."""
+When listing products or information:
+1. Always use numbered lists (1., 2., 3., etc.)
+2. Present one product per line
+3. Include the key information: name, price, and stock
+4. Add relevant details like specifications when asked
+
+Keep responses concise, organized, and focused on the inventory information provided."""
 
 # Create the prompt template
 prompt_template = ChatPromptTemplate.from_messages([
