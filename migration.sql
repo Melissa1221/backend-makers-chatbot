@@ -1,4 +1,5 @@
 -- First, drop existing tables in the correct order (due to foreign key constraints)
+DROP TABLE IF EXISTS product_recommendations;
 DROP TABLE IF EXISTS product_specs;
 DROP TABLE IF EXISTS product_labels;
 DROP TABLE IF EXISTS products;
@@ -23,6 +24,7 @@ CREATE TABLE IF NOT EXISTS products (
     description TEXT,
     stock INTEGER NOT NULL DEFAULT 0,
     category_id INTEGER REFERENCES categories(id),
+    image_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
@@ -49,24 +51,17 @@ CREATE TABLE IF NOT EXISTS product_specs (
     PRIMARY KEY (product_id, spec_key)
 );
 
--- User interactions tables
-CREATE TABLE IF NOT EXISTS user_purchases (
-    user_id INTEGER NOT NULL,
-    product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-    purchased_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-    PRIMARY KEY (user_id, product_id)
+-- Product recommendations table
+CREATE TABLE IF NOT EXISTS product_recommendations (
+    product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+    recommendation_type TEXT NOT NULL,
+    score FLOAT NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    PRIMARY KEY (product_id)
 );
 
-CREATE TABLE IF NOT EXISTS user_views (
-    user_id INTEGER NOT NULL,
-    product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-    viewed_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-    view_count INTEGER DEFAULT 1,
-    PRIMARY KEY (user_id, product_id)
-);
-
--- Create indexes for better query performance
-CREATE INDEX IF NOT EXISTS idx_user_purchases_user_id ON user_purchases(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_purchases_product_id ON user_purchases(product_id);
-CREATE INDEX IF NOT EXISTS idx_user_views_user_id ON user_views(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_views_product_id ON user_views(product_id); 
+-- Create indexes for recommendations
+CREATE INDEX IF NOT EXISTS idx_product_recommendations_type 
+    ON product_recommendations(recommendation_type);
+CREATE INDEX IF NOT EXISTS idx_product_recommendations_score 
+    ON product_recommendations(score); 
